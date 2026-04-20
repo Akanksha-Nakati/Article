@@ -1,13 +1,9 @@
 import { NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { db } from "@/lib/db";
-import type { Adapter } from "next-auth/adapters";
 
 const adminEmail = process.env.ADMIN_EMAIL ?? "";
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(db) as Adapter,
   session: {
     strategy: "jwt",
   },
@@ -22,16 +18,20 @@ export const authOptions: NextAuthOptions = {
       if (!user.email) return false;
       return user.email.toLowerCase() === adminEmail.toLowerCase();
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, profile }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.name = user.name;
+        token.picture = user.image;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.picture as string;
         (session.user as { id?: string }).id = token.id as string;
       }
       return session;
