@@ -3,13 +3,16 @@ import { NextResponse } from "next/server";
 
 export default withAuth(
   function middleware(req) {
-    const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
+    const { pathname } = req.nextUrl;
 
-    if (
-      (pathname.startsWith("/admin") || pathname === "/api/articles") &&
-      !token
-    ) {
+    const isAdminRoute = pathname.startsWith("/admin");
+    const isProtectedApi =
+      pathname.startsWith("/api/articles") &&
+      ["POST", "PUT", "DELETE"].includes(req.method ?? "GET");
+    const isUploadApi = pathname.startsWith("/api/upload");
+
+    if ((isAdminRoute || isProtectedApi || isUploadApi) && !token) {
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("callbackUrl", req.url);
       return NextResponse.redirect(loginUrl);
@@ -19,23 +22,8 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
-        const reqMethod = req.method ?? "GET";
-
-        if (pathname.startsWith("/admin")) return !!token;
-
-        if (
-          pathname.startsWith("/api/articles") &&
-          ["POST", "PUT", "DELETE"].includes(reqMethod)
-        ) {
-          return !!token;
-        }
-
-        if (pathname.startsWith("/api/upload")) return !!token;
-
-        return true;
-      },
+      // Always run the middleware function above — let it handle auth logic
+      authorized: () => true,
     },
   }
 );
