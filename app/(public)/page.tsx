@@ -10,13 +10,19 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const articles = await db.article.findMany({
-    where: { status: "PUBLISHED" },
-    orderBy: { publishedAt: "desc" },
-    include: {
-      tags: { include: { tag: true } },
-    },
-  });
+  let articles: Awaited<ReturnType<typeof db.article.findMany>> = [];
+
+  try {
+    articles = await db.article.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { publishedAt: "desc" },
+      include: {
+        tags: { include: { tag: true } },
+      },
+    });
+  } catch {
+    // DB not yet configured — render empty state
+  }
 
   return (
     <div>
