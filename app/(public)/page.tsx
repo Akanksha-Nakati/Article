@@ -14,7 +14,7 @@ export default async function HomePage() {
 
   try {
     articles = await db.article.findMany({
-      where: { status: "PUBLISHED" },
+      where: { status: "PUBLISHED", deletedAt: null },
       orderBy: { publishedAt: "desc" },
       include: {
         tags: { include: { tag: true } },

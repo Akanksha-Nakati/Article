@@ -9,7 +9,9 @@ export async function GET() {
   const isAdmin = !!session?.user;
 
   const articles = await db.article.findMany({
-    where: isAdmin ? {} : { status: "PUBLISHED" },
+    where: isAdmin
+      ? {}
+      : { status: "PUBLISHED", deletedAt: null },
     orderBy: { publishedAt: "desc" },
     include: {
       tags: { include: { tag: true } },

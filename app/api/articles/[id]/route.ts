@@ -33,7 +33,7 @@ export async function PUT(
   }
 
   const body = await req.json();
-  const { title, subtitle, bodyHtml, bodyJson, tags, status, coverImageUrl } =
+  const { title, subtitle, bodyHtml, bodyJson, tags, status, coverImageUrl, restore } =
     body;
 
   const existing = await db.article.findUnique({ where: { id: params.id } });
@@ -77,6 +77,8 @@ export async function PUT(
       ...(status !== undefined && {
         status: status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
       }),
+      // Restore from soft-delete
+      ...(restore === true && { deletedAt: null }),
       readTimeMins,
       publishedAt,
       updatedAt: new Date(),
@@ -103,7 +105,11 @@ export async function DELETE(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  await db.article.delete({ where: { id: params.id } });
+  // Soft delete — sets deletedAt timestamp, record stays in DB
+  const article = await db.article.update({
+    where: { id: params.id },
+    data: { deletedAt: new Date() },
+  });
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, deletedAt: article.deletedAt });
 }

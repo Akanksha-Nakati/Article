@@ -3,6 +3,9 @@ import { ArticleBody } from "@/components/reader/ArticleBody";
 import { TagPill } from "@/components/ui/TagPill";
 import { formatDate } from "@/lib/utils";
 import { notFound } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import Link from "next/link";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -45,20 +48,38 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function ArticlePage({ params }: PageProps) {
-  const article = await db.article.findUnique({
-    where: { slug: params.slug },
-    include: {
-      tags: { include: { tag: true } },
-      author: true,
-    },
-  });
+  const [article, session] = await Promise.all([
+    db.article.findUnique({
+      where: { slug: params.slug },
+      include: {
+        tags: { include: { tag: true } },
+        author: true,
+      },
+    }),
+    getServerSession(authOptions),
+  ]);
 
-  if (!article || article.status !== "PUBLISHED") {
+  if (!article || article.status !== "PUBLISHED" || article.deletedAt !== null) {
     notFound();
   }
 
+  const isAdmin = !!session?.user;
+
   return (
     <article>
+      {/* Admin edit bar */}
+      {isAdmin && (
+        <div className="mb-6 flex items-center justify-between px-4 py-2.5 bg-ink/5 border border-ink/10 rounded-lg text-sm">
+          <span className="text-ink/50">You are viewing as admin</span>
+          <Link
+            href={`/admin/editor/${article.id}`}
+            className="text-accent font-medium hover:underline"
+          >
+            ✏️ Edit this article →
+          </Link>
+        </div>
+      )}
+
       {/* Tags */}
       {article.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-6">

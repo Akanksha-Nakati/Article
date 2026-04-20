@@ -33,6 +33,7 @@ model Article {
   status        ArticleStatus @default(DRAFT)
   readTimeMins  Int           @default(1)
   publishedAt   DateTime?
+  deletedAt     DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   tags          ArticleTag[]
