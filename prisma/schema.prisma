@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  avatarUrl String?
+  createdAt DateTime  @default(now())
+  articles  Article[]
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model Article {
+  id            String        @id @default(cuid())
+  author        User          @relation(fields: [authorId], references: [id])
+  authorId      String
+  title         String
+  subtitle      String?
+  slug          String        @unique
+  bodyHtml      String        @default("")
+  bodyJson      Json?
+  coverImageUrl String?
+  status        ArticleStatus @default(DRAFT)
+  readTimeMins  Int           @default(1)
+  publishedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  tags          ArticleTag[]
+  images        Image[]
+}
+
+model Tag {
+  id       String       @id @default(cuid())
+  name     String       @unique
+  slug     String       @unique
+  articles ArticleTag[]
+}
+
+model ArticleTag {
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+
+  @@id([articleId, tagId])
+}
+
+model Image {
+  id         String   @id @default(cuid())
+  article    Article? @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  articleId  String?
+  storageKey String
+  url        String
+  altText    String?
+  width      Int?
+  height     Int?
+  uploadedAt DateTime @default(now())
+}
