@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Article — Personal Publishing Platform
+
+A Medium-style personal blog built with Next.js 14, TypeScript, TailwindCSS, TipTap, Prisma, Supabase, and NextAuth.js.
+
+## Stack
+
+- **Next.js 14** (App Router, Server Components)
+- **TypeScript**
+- **TailwindCSS** + `@tailwindcss/typography`
+- **TipTap** rich text editor
+- **Prisma ORM** + **Supabase** (PostgreSQL)
+- **NextAuth.js** — GitHub OAuth, admin-only
+- **Cloudflare R2** — image uploads via AWS S3-compatible SDK
+- **Vercel** — deployment target
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone & install
+
+```bash
+git clone https://github.com/Akanksha-Nakati/Article.git
+cd Article
+npm install
+```
+
+### 2. Configure environment
+
+Copy `.env.local.example` to `.env.local` and fill in every value:
+
+```bash
+cp .env.local.example .env.local
+```
+
+### 3. Push the database schema
+
+```bash
+npx prisma db push
+```
+
+### 4. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/
+  (public)/           → Homepage feed + article reader (server components)
+  (admin)/            → Dashboard + TipTap editor (client components, auth-protected)
+  api/                → REST API routes
+components/
+  editor/             → TipTapEditor, EditorToolbar
+  reader/             → ArticleCard, ArticleBody
+  ui/                 → Button, TagPill
+lib/                  → db, auth, storage, utils
+prisma/               → schema.prisma
+middleware.ts         → Route protection
+```
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+See `.env.local.example` for all required keys and their descriptions.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
